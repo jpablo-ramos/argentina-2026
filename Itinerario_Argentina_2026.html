@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Argentina 2026">
+<title>Argentina Jun 2026</title>
+<style>
+:root {
+  --bg:#f7f6f3; --card:#fff; --text:#2c2c2a; --sub:#888780; --border:#e0dfdb;
+  --accent:#993c1d; --green:#085041; --green-bg:#e1f5ee;
+  --warn-bg:#fff3cd; --warn:#7d4e00; --tip-bg:#f5f4f0;
+  --gold:#fac775; --highlight:#9fe1cb; --blue:#007aff;
+  --r:14px;
+  --st: env(safe-area-inset-top,0px);
+  --sb: env(safe-area-inset-bottom,0px);
+  --sl: env(safe-area-inset-left,0px);
+  --sr: env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+  background:var(--bg);color:var(--text);
+  padding-bottom:calc(68px + var(--sb));
+  padding-left:var(--sl);padding-right:var(--sr);
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+}
+
+/* Header */
+.hdr{
+  background:var(--text);color:#fff;
+  padding:calc(var(--st) + 14px) 20px 13px;
+  position:sticky;top:0;z-index:100;
+}
+.hdr h1{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.hdr p{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+
+/* Day picker */
+.picker-wrap{
+  background:var(--text);padding:6px 0 11px;
+  position:sticky;top:calc(var(--st) + 50px);z-index:99;
+}
+.picker{
+  display:flex;overflow-x:auto;gap:6px;padding:0 16px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.picker::-webkit-scrollbar{display:none}
+.dbtn{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  padding:9px 11px;min-width:48px;min-height:62px;
+  border-radius:11px;border:none;
+  background:rgba(255,255,255,.13);color:rgba(255,255,255,.65);
+  cursor:pointer;transition:background .15s,color .15s;
+}
+.dbtn.active{background:var(--accent);color:#fff}
+.dbtn .dn{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.dbtn .dd{font-size:20px;font-weight:700;line-height:1.1}
+.dbtn .dot{width:6px;height:6px;border-radius:50%;margin-top:4px}
+
+/* Day content */
+.dcont{display:none;padding:14px 14px 0}
+.dcont.active{display:block}
+
+/* Day header */
+.dhdr{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;flex-shrink:0}
+.dtitle{font-size:17px;font-weight:700;line-height:1.3;flex:1;min-width:0}
+
+/* Weather bar */
+.wx{
+  display:flex;align-items:flex-start;gap:11px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:11px 13px;margin-bottom:11px;
+}
+.wx-icon{font-size:26px;flex-shrink:0;line-height:1}
+.wx-temp{font-size:16px;font-weight:700;color:var(--text)}
+.wx-cond{font-size:13px;color:var(--sub);margin-top:2px}
+.wx-tip{font-size:12px;color:var(--sub);font-style:italic;margin-top:3px;line-height:1.4}
+
+/* Activity card */
+.act{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 13px;margin-bottom:9px;
+  display:flex;gap:11px;align-items:flex-start;
+  transition:opacity .1s,transform .12s;
+  -webkit-user-select:none;user-select:none;
+}
+.act.tap{cursor:pointer}
+.act.tap:active{transform:scale(.97);opacity:.84}
+.act.ok{border-left:3px solid var(--green)}
+.atime{font-size:11px;font-weight:700;color:var(--sub);min-width:46px;text-align:right;flex-shrink:0;padding-top:2px}
+.abody{flex:1;min-width:0}
+.aname{font-size:15px;font-weight:600;color:var(--text);line-height:1.35}
+.act.ok .aname{color:var(--green)}
+.adesc{font-size:14px;color:var(--sub);margin-top:3px;line-height:1.45}
+.achips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+.tag-flight{background:#e6f1fb;color:#0c447c}
+.tag-food{background:#e1f5ee;color:#085041}
+.tag-show{background:#faece7;color:#712b13}
+.tag-excur{background:#eeedfe;color:#3c3489}
+.tag-walk{background:#f5f4f0;color:#5f5e5a}
+.tag-ferry{background:#eeedfe;color:#3c3489}
+.tag-hotel{background:#f5f4f0;color:#5f5e5a}
+.chip-go{font-size:12px;font-weight:600;color:var(--blue);background:#e8f2ff;padding:3px 9px;border-radius:20px}
+.chip-walk{font-size:12px;font-weight:600;color:var(--green);background:var(--green-bg);padding:3px 9px;border-radius:20px}
+.arr{font-size:20px;color:var(--sub);flex-shrink:0;padding-top:1px;line-height:1}
+.act.tap .arr{color:var(--blue)}
+
+/* Tip boxes */
+.tip{background:var(--tip-bg);border-radius:10px;padding:10px 13px;margin-bottom:9px;font-size:14px;color:#5f5e5a;line-height:1.5}
+.tip.warn{background:var(--warn-bg);color:var(--warn);font-weight:600}
+.tip.ok{background:var(--green-bg);color:var(--green);font-weight:600}
+
+/* Panels */
+.panel{display:none;padding:14px}
+.panel.active{display:block}
+.psec{margin-bottom:20px}
+.psec h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--sub);margin-bottom:8px;padding-left:4px}
+.pcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.prow{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--border);align-items:flex-start}
+.prow:last-child{border-bottom:none}
+.pk{font-size:12px;font-weight:700;color:var(--sub);min-width:84px;flex-shrink:0;padding-top:2px}
+.pv{font-size:14px;color:var(--text);line-height:1.45}
+.code{font-family:'SF Mono',Menlo,monospace;font-size:15px;font-weight:700;background:var(--tip-bg);padding:3px 9px;border-radius:7px;letter-spacing:1px}
+
+/* Bucket list */
+.bsec { margin-bottom: 22px; }
+.bsec-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bsec-icon { font-size: 22px; }
+.bsec-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.bsec-count { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--sub); background: var(--tip-bg); padding: 3px 10px; border-radius: 20px; }
+.bitem {
+  display: flex; align-items: flex-start; gap: 13px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 14px; margin-bottom: 8px;
+  cursor: pointer; transition: opacity .15s, background .15s;
+  -webkit-user-select: none; user-select: none;
+}
+.bitem:active { opacity: .75; }
+.bitem.done { background: var(--green-bg); border-color: var(--highlight); }
+.bcheck {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s; margin-top: 1px;
+}
+.bitem.done .bcheck { background: var(--green); border-color: var(--green); }
+.bcheck-icon { font-size: 13px; color: white; display: none; }
+.bitem.done .bcheck-icon { display: block; }
+.bname { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.bitem.done .bname { color: var(--green); }
+.bdesc { font-size: 13px; color: var(--sub); margin-top: 3px; line-height: 1.4; }
+.bitem.done .bdesc { color: var(--green); opacity: .75; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 4px; margin-bottom: 18px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width .3s; }
+
+/* Bottom nav */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(247,246,243,.96);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding:9px 0 calc(8px + var(--sb));
+  padding-left:var(--sl);padding-right:var(--sr);
+  z-index:200;
+}
+.nbtn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  border:none;background:none;cursor:pointer;
+  min-height:44px;padding:5px 0;
+  color:var(--sub);font-size:10px;font-weight:600;letter-spacing:.2px;
+  transition:color .15s;
+}
+.nbtn.active{color:var(--accent)}
+.nbtn svg{width:24px;height:24px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>&#127462;&#127479; Argentina &middot; Junio 2026</h1>
+  <p>JP &amp; Lorena &middot; 2&ndash;17 Jun</p>
+</header>
+
+<div class="picker-wrap">
+  <div class="picker" id="picker"></div>
+</div>
+
+<div id="tab-itin">
+  <div id="days"></div>
+</div>
+
+<div id="tab-res" class="panel">
+  <div class="psec">
+    <h3>✈️ Vuelos internacionales &mdash; Arajet</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Aerolinea</span><span class="pv"><strong>Arajet</strong> &middot; vuelos DM</span></div>
+      <div class="prow"><span class="pk">2 Jun &rarr; ida</span><span class="pv">DM 7165 &middot; 23:36 NLU &rarr; PUJ (escala 5h)</span></div>
+      <div class="prow"><span class="pk">3 Jun &rarr; ida</span><span class="pv">DM 6200 &middot; 11:15 PUJ &rarr; 20:15 EZE Buenos Aires</span></div>
+      <div class="prow"><span class="pk">17 Jun &rarr; vuelta</span><span class="pv">DM 6201 &middot; 22:05 EZE &rarr; PUJ (escala 1h)</span></div>
+      <div class="prow"><span class="pk">18 Jun &rarr; vuelta</span><span class="pv">DM 7104 &middot; 06:17 PUJ &rarr; 09:06 NLU Ciudad de Mexico</span></div>
+    </div>
+  </div>
+
+  <div class="psec">
+    <h3>✈️ Vuelos domesticos &mdash; Aerolineas Argentinas</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Aerolinea</span><span class="pv"><strong>Aerolineas Argentinas</strong> &middot; vuelos AR</span></div>
+      <div class="prow"><span class="pk">Bariloche ida</span><span class="pv"><span class="code">WYCCBH</span></span></div>
+      <div class="prow"><span class="pk">4 Jun</span><span class="pv">AR 1674 &middot; 11:05 AEP &rarr; 13:30 BRC Bariloche</span></div>
+      <div class="prow"><span class="pk">Bariloche vta</span><span class="pv"><span class="code">WYCCBH</span></span></div>
+      <div class="prow"><span class="pk">7 Jun</span><span class="pv">AR 1669 &middot; 11:00 BRC &rarr; 13:05 AEP Buenos Aires</span></div>
+      <div class="prow"><span class="pk">Calafate ida</span><span class="pv"><span class="code">WCZVFC</span></span></div>
+      <div class="prow"><span class="pk">8 Jun</span><span class="pv">AR 1838 &middot; 06:00 AEP &rarr; 09:20 FTE El Calafate</span></div>
+      <div class="prow"><span class="pk">Calafate vta</span><span class="pv"><span class="code">WCZVFC</span></span></div>
+      <div class="prow"><span class="pk">10 Jun</span><span class="pv">AR 1849 &middot; 19:25 FTE &rarr; 22:25 AEP Buenos Aires</span></div>
+    </div>
+  </div>
+
+  <div class="psec">
+    <h3>🚢 Ferry Uruguay &mdash; Buquebus</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Reserva</span><span class="pv"><span class="code">2686066</span> &middot; Juan Pablo + Lorena</span></div>
+      <div class="prow"><span class="pk">14 Jun ida</span><span class="pv">08:30 Buenos Aires &rarr; Colonia del Sacramento</span></div>
+      <div class="prow"><span class="pk">14 Jun vta</span><span class="pv">18:00 Colonia del Sacramento &rarr; Buenos Aires</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Restaurantes confirmados</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Mengano</span><span class="pv">13 Jun 20:00 &middot; Salon &middot; Cancelar antes 12 Jun 19:59h</span></div>
+      <div class="prow"><span class="pk">Don Julio &#11088;</span><span class="pv">15 Jun 19:00 &middot; Vereda exterior &middot; 15 min tolerancia</span></div>
+      <div class="prow"><span class="pk">Corte Comedor</span><span class="pv">16 Jun 14:30 &middot; Salon &middot; 10 min tolerancia &middot; max 2h</span></div>
+      <div class="prow"><span class="pk">La Tablita</span><span class="pv">El Calafate &middot; pedir al hotel que reserven al llegar</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Shows y excursiones</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Soda Stereo</span><span class="pv">11 Jun 19:00 &middot; Movistar Arena</span></div>
+      <div class="prow"><span class="pk">WOS</span><span class="pv">12 Jun 21:00 &middot; Villa Ballester</span></div>
+      <div class="prow"><span class="pk">Madero Tango</span><span class="pv">14 Jun &middot; cena 19:30 &middot; show 21:00</span></div>
+      <div class="prow"><span class="pk">Perito Moreno</span><span class="pv">9 Jun &middot; excursion confirmada</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Hoteles</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Bariloche</span><span class="pv">Gran Hotel Panamericano &middot; Av. Bustillo 22900, Llao Llao</span></div>
+      <div class="prow"><span class="pk">El Calafate</span><span class="pv">Mirador del Lago Hotel &middot; Av. del Libertador 2047</span></div>
+      <div class="prow"><span class="pk">Airbnb BsAs</span><span class="pv">Recoleta &middot; Av. del Libertador y Aguero aprox.</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Aeropuertos</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">AEP</span><span class="pv">Aeroparque Jorge Newbery &middot; vuelos domesticos &middot; 15 min de Recoleta</span></div>
+      <div class="prow"><span class="pk">EZE</span><span class="pv">Ezeiza Internacional &middot; vuelos internacionales &middot; 45 min de Recoleta</span></div>
+      <div class="prow"><span class="pk">NLU (CDMX)</span><span class="pv">Felipe Angeles AIFA &middot; aeropuerto de salida y llegada en Mexico</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-tips" class="panel">
+  <div class="psec">
+    <h3>Dinero</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Visa/MC</span><span class="pv">Metodo principal. Tasa MEP ~1,200 pesos/USD. Llevar tarjeta fisica.</span></div>
+      <div class="prow"><span class="pk">USD cash</span><span class="pv">Cambiar en Western Union a tasa blue ~1,230 pesos/USD. Para propinas, taxis y mercados.</span></div>
+      <div class="prow"><span class="pk">Propinas</span><span class="pv">10% en restaurantes con servicio. Solo en efectivo aunque pagues con tarjeta.</span></div>
+      <div class="prow"><span class="pk">Evitar</span><span class="pv">AmEx y otras tarjetas usan tasa oficial ~950 pesos/USD (25% mas caro).</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Transporte Buenos Aires</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Cabify</span><span class="pv">Mejor opcion. Pedir autos Black cuando sea posible. Mas nuevos y seguros.</span></div>
+      <div class="prow"><span class="pk">Taxis amarillos</span><span class="pv">Evitar. Conocidos por tomar rutas largas a turistas.</span></div>
+      <div class="prow"><span class="pk">A pie</span><span class="pv">Recoleta es muy caminable. El Ateneo, Cementerio y Feria estan a menos de 10 min caminando del Airbnb.</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Seguridad</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">General</span><span class="pv">Ciudad segura en los barrios de esta guia. Guardar celular en el bolsillo al caminar.</span></div>
+      <div class="prow"><span class="pk">Cuidado extra</span><span class="pv">La Boca/Caminito, Obelisco, San Telmo. No dejar objetos sobre la mesa.</span></div>
+      <div class="prow"><span class="pk">La Boca</span><span class="pv">Ir en Cabify DIRECTO a Caminito y volver. No caminar las calles de alrededor.</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Restaurantes</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Horarios</span><span class="pv">La cena no empieza antes de las 20:00-20:30. Reserva siempre.</span></div>
+      <div class="prow"><span class="pk">Agua</span><span class="pv">No es gratis. Si pides agua traen botella paga.</span></div>
+      <div class="prow"><span class="pk">Cuenta</span><span class="pv">No la traen hasta que la pidas. Normal en Argentina.</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Clima por destino</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Buenos Aires</span><span class="pv">8-15C &middot; Invierno templado &middot; abrigo y capas</span></div>
+      <div class="prow"><span class="pk">Bariloche</span><span class="pv">-1 a 7C &middot; nieve posible &middot; ropa de nieve obligatoria</span></div>
+      <div class="prow"><span class="pk">El Calafate</span><span class="pv">-2 a 5C &middot; muy frio &middot; solo 8h de luz &middot; capas termicas y guantes</span></div>
+      <div class="prow"><span class="pk">Uruguay</span><span class="pv">7-13C &middot; nublado &middot; similar a Buenos Aires</span></div>
+    </div>
+  </div>
+  <div class="psec">
+    <h3>Comida imperdible</h3>
+    <div class="pcard">
+      <div class="prow"><span class="pk">Parrilla</span><span class="pv">Tira de Asado, Entra&ntilde;a, Vacio, Ojo de Bife, Provoleta, Molleja, Morcilla</span></div>
+      <div class="prow"><span class="pk">Empanadas</span><span class="pv">Romario, Costumbres Criollas, La Cocina</span></div>
+      <div class="prow"><span class="pk">Milanesa</span><span class="pv">En bodegones como Mengano (reservado) o El Preferido de Palermo</span></div>
+      <div class="prow"><span class="pk">Medialunas</span><span class="pv">Boulan, Atelier Fuerza, l'harmonie &mdash; el desayuno porteno por excelencia</span></div>
+      <div class="prow"><span class="pk">Gelato</span><span class="pv">Dulce de Leche obligatorio. Finde, Cadore, Rapa Nui (mejor en Bariloche)</span></div>
+      <div class="prow"><span class="pk">Patagonia</span><span class="pv">Cordero al asador (La Tablita, Calafate), Trucha (Bariloche), Chivito (Colonia)</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-bucket" class="panel">
+  <div id="progress-bar-wrap" class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <div class="bsec" id="sec-comida">
+    <div class="bsec-hdr">
+      <span class="bsec-icon">🍽️</span>
+      <span class="bsec-title">Comida imperdible</span>
+      <span class="bsec-count" id="cnt-comida">0 / 0</span>
+    </div>
+  </div>
+
+  <div class="bsec" id="sec-bebida">
+    <div class="bsec-hdr">
+      <span class="bsec-icon">🍷</span>
+      <span class="bsec-title">Bebida imperdible</span>
+      <span class="bsec-count" id="cnt-bebida">0 / 0</span>
+    </div>
+  </div>
+
+  <div class="bsec" id="sec-lugares">
+    <div class="bsec-hdr">
+      <span class="bsec-icon">📍</span>
+      <span class="bsec-title">Lugares imperdibles</span>
+      <span class="bsec-count" id="cnt-lugares">0 / 0</span>
+    </div>
+  </div>
+
+  <div class="bsec" id="sec-souvenirs">
+    <div class="bsec-hdr">
+      <span class="bsec-icon">🎁</span>
+      <span class="bsec-title">Souvenirs para llevar</span>
+      <span class="bsec-count" id="cnt-souvenirs">0 / 0</span>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <button class="nbtn active" id="n-itin" onclick="tab('itin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Itinerario
+  </button>
+  <button class="nbtn" id="n-res" onclick="tab('res')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Reservas
+  </button>
+  <button class="nbtn" id="n-tips" onclick="tab('tips')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Tips
+  </button>
+  <button class="nbtn" id="n-bucket" onclick="tab('bucket')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>
+    Lista
+  </button>
+</nav>
+
+<script>
+var DAYS = [
+  { date:"2 Jun", dow:"Mar", dest:"CDMX", dc:"#e6f1fb", dt:"#0c447c", dd:"#185fa5",
+    title:"Salida de Mexico",
+    wx:{ icon:"🌙", temp:"Vuelo nocturno", cond:"CDMX - NLU (Felipe Angeles)", tip:"Lleva almohada de cuello y audifonos en el carry-on" },
+    acts:[
+      { time:"23:36", name:"DM 7165 - NLU a PUJ", desc:"Arajet - Felipe Angeles a Punta Cana - 4h39min", ok:true, tag:"flight", map:"Aeropuerto Internacional Felipe Angeles AIFA Mexico", go:"Aeropuerto NLU", walk:false }
+    ]
+  },
+  { date:"3 Jun", dow:"Mie", dest:"Transito", dc:"#e6f1fb", dt:"#0c447c", dd:"#185fa5",
+    title:"Llegada a Buenos Aires",
+    wx:{ icon:"☁️", temp:"8-15C", cond:"Nublado - fresco", tip:"Trae abrigo listo en el carry-on, llegas de noche" },
+    acts:[
+      { time:"06:15", name:"Escala Punta Cana PUJ", desc:"5 horas de escala", tag:"flight" },
+      { time:"11:15", name:"DM 6200 - PUJ a EZE", desc:"Arajet - Punta Cana a Buenos Aires Ezeiza - 8h", ok:true, tag:"flight" },
+      { time:"20:15", name:"Llegada EZE - Buenos Aires", desc:"Aeropuerto Ezeiza Internacional", ok:true, tag:"flight", map:"Aeropuerto Internacional Ezeiza Buenos Aires", go:"45 min en Cabify a Recoleta", walk:false },
+      { time:"Noche", name:"Check-in Airbnb Recoleta", desc:"Cena ligera cerca - empanadas o delivery", tag:"hotel", map:"Recoleta Buenos Aires Argentina", go:"Ya estas en Recoleta", walk:true }
+    ],
+    tips:[{ type:"tip", text:"Cambiar USD en Western Union al dia siguiente. Cabify desde Ezeiza ~$10 USD, ~45 min." }]
+  },
+  { date:"4 Jun", dow:"Jue", dest:"Bariloche", dc:"#e1f5ee", dt:"#085041", dd:"#0f6e56",
+    title:"Vuelo a Bariloche",
+    wx:{ icon:"❄️", temp:"-1 a 7C", cond:"Nieve posible - temporada de ski", tip:"Pon ropa de nieve en el equipaje de mano, hace frio al bajar del avion" },
+    acts:[
+      { time:"11:05", name:"AR 1674 - AEP a BRC", desc:"Aeroparque a Bariloche - llegada 13:30", ok:true, tag:"flight", map:"Aeropuerto Jorge Newbery Buenos Aires", go:"15 min en Cabify a AEP", walk:false },
+      { time:"13:30", name:"Gran Hotel Panamericano", desc:"Av. Bustillo 22900, Llao Llao - check-in", tag:"hotel", map:"Gran Hotel Panamericano Bariloche", go:"20 min del aeropuerto BRC", walk:false },
+      { time:"Tarde", name:"Orilla del Lago Nahuel Huapi", desc:"A pasos del hotel - vistas a la cordillera nevada", tag:"walk", map:"Lago Nahuel Huapi Bariloche", go:"A pasos del hotel", walk:true },
+      { time:"Tarde", name:"Helado en Rapa Nui", desc:"Especialmente recomendado aqui - mejor que en Buenos Aires", tag:"food", map:"Rapa Nui Bariloche", go:"En el centro de Bariloche", walk:false },
+      { time:"Noche", name:"Cena en Llao Llao", desc:"En el hotel o en el pueblo junto al hotel", tag:"food", map:"Llao Llao Bariloche Argentina", go:"Junto al hotel", walk:true }
+    ],
+    tips:[{ type:"tip", text:"Hotel en Llao Llao, 19km del centro pero a 3km del Circuito Chico. Excelente base para manana." }]
+  },
+  { date:"5 Jun", dow:"Vie", dest:"Bariloche", dc:"#e1f5ee", dt:"#085041", dd:"#0f6e56",
+    title:"Circuito Chico",
+    wx:{ icon:"🏔️", temp:"-1 a 7C", cond:"Nieve posible - cielos despejados a veces", tip:"Llevar guantes, gorro y capa termica" },
+    acts:[
+      { time:"Todo el dia", name:"Circuito Chico", desc:"Tour organizado desde el hotel - 24.5km de ruta escenica por lagos y bosques patagonicos", tag:"excur", map:"Circuito Chico Bariloche", go:"Sale desde el hotel (3km)", walk:false },
+      { time:"Parada", name:"Cerro Campanario", desc:"Teleferico - mejor mirador de Bariloche - vistas a los Andes nevados", tag:"excur", map:"Cerro Campanario Bariloche", go:"En el Circuito Chico", walk:false },
+      { time:"Parada", name:"Hotel Llao Llao", desc:"Uno de los hoteles mas bellos de Latinoamerica - pueden entrar a verlo", tag:"walk", map:"Hotel Llao Llao Bariloche", go:"2km del Gran Hotel Panamericano", walk:true },
+      { time:"Noche", name:"Cena con trucha patagonica", desc:"Especialidad de los lagos - en el hotel o Llao Llao", tag:"food", map:"Llao Llao Bariloche Argentina", go:"Junto al hotel", walk:true }
+    ],
+    tips:[
+      { type:"tip", text:"Pedir el tour organizado al hotel. Sin auto, sin estres." },
+      { type:"warn", text:"Verificar con el hotel si Cerro Catedral esta abierto para jun 5-6. Plan B: Circuito Chico es mas que suficiente." }
+    ]
+  },
+  { date:"6 Jun", dow:"Sab", dest:"Bariloche", dc:"#e1f5ee", dt:"#085041", dd:"#0f6e56",
+    title:"Cerro Otto - chocolaterias",
+    wx:{ icon:"⛷️", temp:"-1 a 7C", cond:"Frio - posible nieve ligera", tip:"Dia perfecto para el teleferico - mejor visibilidad cuando sale el sol" },
+    acts:[
+      { time:"Manana", name:"Cerro Otto", desc:"Teleferico a la cima - vistas 360 - confiteria giratoria con chocolate caliente", tag:"excur", map:"Cerro Otto Bariloche", go:"20 min en remis desde el hotel", walk:false },
+      { time:"Alt.", name:"Excursion en lancha", desc:"Desde Puerto Panuelos - Lago Nahuel Huapi", tag:"excur", map:"Puerto Panuelos Bariloche", go:"10 min caminando del hotel", walk:true },
+      { time:"Tarde", name:"Calle Mitre - chocolaterias", desc:"Rapa Nui, Abuela Goye, Del Turista - cerveza artesanal local", tag:"walk", map:"Calle Mitre San Carlos de Bariloche", go:"30 min en remis desde el hotel", walk:false },
+      { time:"Noche", name:"Cena en el centro de Bariloche", desc:"Regreso en remis al hotel despues", tag:"food", map:"Centro San Carlos de Bariloche Argentina", go:"30 min en remis al hotel", walk:false }
+    ]
+  },
+  { date:"7 Jun", dow:"Dom", dest:"Bariloche", dc:"#e1f5ee", dt:"#085041", dd:"#0f6e56",
+    title:"Regreso a Buenos Aires",
+    wx:{ icon:"☁️", temp:"8-15C", cond:"Nublado - fresco en Buenos Aires", tip:"Guarda la ropa de nieve en la maleta, en BsAs solo necesitas abrigo" },
+    acts:[
+      { time:"11:00", name:"AR 1669 - BRC a AEP", desc:"Bariloche a Aeroparque - llegada 13:05", ok:true, tag:"flight", map:"Aeropuerto San Carlos de Bariloche", go:"20 min al aeropuerto BRC", walk:false },
+      { time:"Tarde", name:"Feria de San Pedro Telmo", desc:"La feria dominical mas famosa de Buenos Aires - antiguedades, musica, artesanos", tag:"walk", map:"Feria Plaza Dorrego San Telmo Buenos Aires", go:"18 min en Cabify desde AEP", walk:false },
+      { time:"Tarde", name:"Feria artesanos Recoleta", desc:"Domingos 11-20h - Plaza Francia", tag:"walk", map:"Feria Plaza Francia Recoleta Buenos Aires", go:"6 min caminando del Airbnb", walk:true },
+      { time:"Noche", name:"Cena ligera y dormir temprano", desc:"Manana vuelo a las 6:00am desde Aeroparque", tag:"food" }
+    ],
+    tips:[{ type:"warn", text:"Vuelo a El Calafate a las 06:00 del lunes 8. Salir del Airbnb a las 4:15am. AEP solo a 15 min en Cabify." }]
+  },
+  { date:"8 Jun", dow:"Lun", dest:"El Calafate", dc:"#eeedfe", dt:"#3c3489", dd:"#533ab7",
+    title:"Vuelo a El Calafate",
+    wx:{ icon:"🥶", temp:"-2 a 5C", cond:"Muy frio - posible nieve", tip:"Solo ~8 horas de luz solar. Ropa termica, guantes y gorro imprescindibles" },
+    acts:[
+      { time:"06:00", name:"AR 1838 - AEP a FTE", desc:"Aeroparque a El Calafate - llegada 09:20 - 3h20min", ok:true, tag:"flight", map:"Aeropuerto Lago Argentino El Calafate", go:"15 min en Cabify a AEP", walk:false },
+      { time:"09:20", name:"Mirador del Lago Hotel", desc:"Av. del Libertador 2047 - frente al lago - check-in", tag:"hotel", map:"Mirador del Lago Hotel El Calafate Argentina", go:"10 min desde el aeropuerto FTE", walk:false },
+      { time:"Tarde", name:"Laguna Nimez", desc:"Reserva de flamencos - abierta 10-18h", tag:"excur", map:"Laguna Nimez El Calafate Argentina", go:"1km caminando del hotel", walk:true },
+      { time:"Tarde", name:"Paseo por Calle del Libertador", desc:"Pueblo pintoresco patagonico - tiendas y bares", tag:"walk", map:"Avenida del Libertador El Calafate Argentina", go:"300m del hotel", walk:true },
+      { time:"Noche", name:"La Tablita - cordero patagonico", desc:"El restaurante mas famoso de El Calafate - al asador", tag:"food", map:"La Tablita El Calafate Argentina", go:"10 min caminando del hotel", walk:true }
+    ],
+    tips:[
+      { type:"tip", text:"Pedir al hotel que reserven La Tablita al llegar." },
+      { type:"warn", text:"Solo ~8 horas de luz en junio. Ropa termica, guantes, gorro y botas impermeables." }
+    ]
+  },
+  { date:"9 Jun", dow:"Mar", dest:"El Calafate", dc:"#eeedfe", dt:"#3c3489", dd:"#533ab7",
+    title:"Glaciar Perito Moreno",
+    wx:{ icon:"🧊", temp:"-2 a 5C", cond:"Frio extremo - viento patagonico intenso", tip:"Llevar capas de viento - el viento en el glaciar es muy fuerte" },
+    acts:[
+      { time:"Todo el dia", name:"Excursion Perito Moreno", desc:"Bus organizado desde el centro (72km, ~1.5h) - una de las maravillas del mundo - reservada", ok:true, tag:"excur", map:"Glaciar Perito Moreno Santa Cruz Argentina", go:"Bus sale desde el centro de El Calafate", walk:false }
+    ],
+    tips:[{ type:"tip", text:"El glaciar cruje y se rompe constantemente. Quedarse varias horas en las pasarelas vale muchisimo." }]
+  },
+  { date:"10 Jun", dow:"Mie", dest:"El Calafate", dc:"#eeedfe", dt:"#3c3489", dd:"#533ab7",
+    title:"Manana libre - Regreso a BsAs",
+    wx:{ icon:"🌥️", temp:"-2C a 15C", cond:"Frio en Calafate - fresco al llegar a BsAs", tip:"Llegas a Aeroparque a las 22:25, Cabify directo al Airbnb" },
+    acts:[
+      { time:"Manana", name:"Laguna Nimez", desc:"Abre 10h - flamencos y aves patagonicas", tag:"excur", map:"Laguna Nimez El Calafate Argentina", go:"1km caminando del hotel", walk:true },
+      { time:"Manana", name:"Souvenirs patagonicos", desc:"Paseo tranquilo por el pueblo", tag:"walk", map:"Avenida del Libertador El Calafate Argentina", go:"300m del hotel", walk:true },
+      { time:"19:25", name:"AR 1849 - FTE a AEP", desc:"El Calafate a Aeroparque - llegada 22:25", ok:true, tag:"flight", map:"Aeropuerto Lago Argentino El Calafate", go:"10 min al aeropuerto", walk:false }
+    ]
+  },
+  { date:"11 Jun", dow:"Jue", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"Soda Stereo",
+    wx:{ icon:"☁️", temp:"8-15C", cond:"Nublado - fresco", tip:"Abrigo para la noche, despues del concierto hace frio al salir" },
+    acts:[
+      { time:"Manana", name:"Desayuno en Atelier Fuerza", desc:"Recuperarse del madrugon - las mejores medialunas de la ciudad", tag:"food", map:"Atelier Fuerza Buenos Aires", go:"En Recoleta", walk:true },
+      { time:"12-20h", name:"MALBA", desc:"Museo de Arte Latinoamericano - abierto jueves 12-20h", tag:"excur", map:"MALBA Museo Arte Latinoamericano Buenos Aires", go:"8 min en Cabify", walk:false },
+      { time:"17:00", name:"Gelato en Finde o Cadore", desc:"Snack previo al concierto", tag:"food", map:"Finde Buenos Aires", go:"En Palermo", walk:false },
+      { time:"19:00", name:"Concierto Soda Stereo", desc:"Movistar Arena - Buenos Aires", ok:true, tag:"show", map:"Movistar Arena Buenos Aires", go:"12 min en Cabify", walk:false }
+    ]
+  },
+  { date:"12 Jun", dow:"Vie", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"WOS en Villa Ballester",
+    wx:{ icon:"🌥️", temp:"8-15C", cond:"Nublado - fresco", tip:"Noche de concierto fuera del centro - tomar Cabify de regreso" },
+    acts:[
+      { time:"Manana", name:"Cementerio de Recoleta", desc:"Tours guiados a las 11h y 14h - historia y arquitectura impresionantes", tag:"excur", map:"Cementerio de la Recoleta Buenos Aires", go:"8 min caminando del Airbnb", walk:true },
+      { time:"Tarde", name:"Palermo Soho", desc:"Tiendas, galerias, cafes", tag:"walk", map:"Palermo Soho Buenos Aires Argentina", go:"12 min en Cabify", walk:false },
+      { time:"17:00", name:"Merienda portena", desc:"Medialunas mas submarino en algun cafe de Palermo", tag:"food", map:"Palermo Buenos Aires", go:"En Palermo", walk:false },
+      { time:"21:00", name:"Concierto WOS", desc:"Villa Ballester", ok:true, tag:"show", map:"Villa Ballester Buenos Aires", go:"35 min en Cabify desde Recoleta", walk:false }
+    ]
+  },
+  { date:"13 Jun", dow:"Sab", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"La Boca - Puerto Madero - Mengano",
+    wx:{ icon:"🌥️", temp:"8-15C", cond:"Nublado - fresco", tip:"Visitar La Boca entre 10h y 16h - despues cierra y la zona se vacia" },
+    acts:[
+      { time:"Manana", name:"La Boca / Caminito", desc:"Cabify directo, NO caminar calles de alrededor. Tango, casas de colores, historia del barrio", tag:"excur", map:"Caminito La Boca Buenos Aires", go:"25 min en Cabify desde Recoleta", walk:false },
+      { time:"Mediodia", name:"Puerto Madero", desc:"Puente de la Mujer - costanera - de camino de regreso al norte", tag:"walk", map:"Puerto Madero Buenos Aires Argentina", go:"20 min en Cabify", walk:false },
+      { time:"Tarde", name:"Feria artesanos Recoleta", desc:"Sabados 11-20h - Plaza Francia", tag:"walk", map:"Feria Plaza Francia Recoleta Buenos Aires", go:"6 min caminando del Airbnb", walk:true },
+      { time:"20:00", name:"Mengano", desc:"Bodegon clasico - Michelin Bib Gourmand - Salon - pedir milanesa", ok:true, tag:"food", map:"Mengano restaurant Buenos Aires", go:"12 min en Cabify", walk:false }
+    ],
+    tips:[{ type:"ok", text:"Mengano confirmado. Cancelacion gratuita hasta 12 Jun 19:59h. Despues: ARS 20,000 por comensal." }]
+  },
+  { date:"14 Jun", dow:"Dom", dest:"Uruguay", dc:"#fff8ee", dt:"#854f0b", dd:"#854f0b",
+    title:"Uruguay - Colonia - Madero Tango",
+    wx:{ icon:"🌦️", temp:"7-13C", cond:"Nublado - brisa junto al rio", tip:"Lleva abrigo - Colonia esta junto al Rio de la Plata y corre brisa" },
+    acts:[
+      { time:"07:00", name:"Cabify al terminal Buquebus", desc:"Av. Antartida Argentina 821 - Puerto Madero", tag:"walk", map:"Terminal Buquebus Puerto Madero Buenos Aires", go:"20 min en Cabify desde Recoleta", walk:false },
+      { time:"08:30", name:"Ferry BsAs a Colonia", desc:"Buquebus - reserva 2686066 - Juan Pablo mas Lorena - 1h15min", ok:true, tag:"ferry" },
+      { time:"09:45", name:"Llegada Colonia del Sacramento", desc:"Uruguay - Barrio Historico UNESCO", tag:"walk", map:"Colonia del Sacramento Uruguay", go:"Llegada al puerto de Colonia", walk:true },
+      { time:"Manana", name:"Barrio Historico UNESCO", desc:"Calles empedradas, faro colonial, murallas - foto obligatoria", tag:"excur", map:"Barrio Historico Colonia del Sacramento Uruguay", go:"10 min caminando del puerto", walk:true },
+      { time:"Mediodia", name:"El Porton", desc:"Calle San Pedro 142 - mejor parrilla de Colonia - asado uruguayo mas chivito", tag:"food", map:"El Porton restaurante Colonia del Sacramento Uruguay", go:"En el casco historico", walk:true },
+      { time:"Tarde", name:"Compras de lana y tejidos", desc:"Especialidad local - tiendas en el casco historico", tag:"walk", map:"Casco Historico Colonia del Sacramento Uruguay", go:"En el casco historico", walk:true },
+      { time:"18:00", name:"Ferry Colonia a BsAs", desc:"Buquebus - reserva 2686066 - llegada Puerto Madero ~19:15h", ok:true, tag:"ferry" },
+      { time:"19:30", name:"Madero Tango - cena", desc:"Misma zona Puerto Madero - 5 min del terminal", ok:true, tag:"food", map:"Madero Tango Buenos Aires Puerto Madero", go:"5 min caminando del terminal", walk:true },
+      { time:"21:00", name:"Show de tango y folclore", desc:"Hasta ~22:20h", ok:true, tag:"show", map:"Madero Tango Buenos Aires Puerto Madero" }
+    ],
+    tips:[
+      { type:"warn", text:"Solo 15 min entre llegada del ferry (19:15) y la cena en Madero Tango (19:30). Salir de Colonia ya arreglados e ir directo del barco al restaurante." },
+      { type:"tip", text:"El terminal Buquebus y Madero Tango estan en Puerto Madero. 5 min caminando desde la terminal." }
+    ]
+  },
+  { date:"15 Jun", dow:"Lun", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"🎂 Cumpleanos de Lorena",
+    wx:{ icon:"🎂", temp:"8-15C", cond:"Nublado - fresco", tip:"Don Julio es en vereda exterior, llevar sueter extra para la cena" },
+    acts:[
+      { time:"Manana", name:"Medialunas en Boulan o l'harmonie", desc:"Las mejores de la ciudad - desayuno especial de cumpleanos", tag:"food", map:"Boulan Buenos Aires", go:"En Recoleta o Palermo", walk:true },
+      { time:"Tarde", name:"High Tea en Alvear Palace Hotel", desc:"Experiencia de lujo para el cumpleanos", tag:"food", map:"Alvear Palace Hotel Buenos Aires", go:"700m caminando del Airbnb", walk:true },
+      { time:"Tarde", name:"Jardin Japones o Rosedal", desc:"Abiertos lunes - paseo tranquilo", tag:"excur", map:"Jardin Japones Buenos Aires", go:"10 min en Cabify", walk:false },
+      { time:"19:00", name:"Don Julio ⭐", desc:"Michelin Star - la mejor parrilla de BsAs - vereda exterior - Palermo", ok:true, tag:"food", map:"Don Julio restaurant Buenos Aires Palermo", go:"12 min en Cabify", walk:false }
+    ],
+    tips:[{ type:"ok", text:"Don Julio confirmado. Mesa en vereda exterior. 15 min de tolerancia. Pedir tira de asado, entrana, provoleta y molleja." }]
+  },
+  { date:"16 Jun", dow:"Mar", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"Teatro Colon - Corte Comedor",
+    wx:{ icon:"🌥️", temp:"8-15C", cond:"Nublado - fresco", tip:"Ultimo dia completo, aprovechar tarde en Distrito Arcos para compras" },
+    acts:[
+      { time:"Manana", name:"Teatro Colon", desc:"Tours lun-dom 10:00-16:45h - uno de los mejores teatros de opera del mundo", tag:"excur", map:"Teatro Colon Buenos Aires", go:"15 min en Cabify", walk:false },
+      { time:"Manana", name:"Mercado de San Telmo", desc:"Antiguedades, arte, gastronomia - abierto martes", tag:"walk", map:"Mercado de San Telmo Buenos Aires", go:"18 min en Cabify", walk:false },
+      { time:"14:30", name:"Corte Comedor", desc:"Parrilla top de BsAs - Salon - 10 min tolerancia - 2 horas maximo", ok:true, tag:"food", map:"Corte Comedor restaurant Buenos Aires", go:"18 min en Cabify", walk:false },
+      { time:"Tarde", name:"Distrito Arcos", desc:"Outlet premium - compras finales", tag:"walk", map:"Distrito Arcos Buenos Aires", go:"7 min caminando del Airbnb", walk:true },
+      { time:"22:00", name:"⚽ Argentina vs Argelia - Mundial FIFA 2026", desc:"Debut de Argentina en el Mundial. Kansas City. Elegir entre las dos opciones de abajo.", ok:true, tag:"show" },
+      { time:"Opcion A", name:"Locos x el Futbol - ver el Mundial", desc:"Bar deportivo en Recoleta con pantallas gigantes HD/4K. Llegar 1-2 horas antes - se llena a reventar con el partido de Argentina. La experiencia mundialista portena.", tag:"show", map:"Locos x el Futbol Recoleta Buenos Aires", go:"Cerca del Airbnb en Recoleta", walk:true },
+      { time:"Opcion B", name:"Floreria Atlantico - cocteles de despedida", desc:"El mejor bar de cocteleria de Buenos Aires. Atmosfera intima y sofisticada. Seguro lo pasan en pantalla tambien, pero con mucho mas estilo.", tag:"food", map:"Floreria Atlantico Buenos Aires", go:"12 min en Cabify", walk:false }
+    ],
+    tips:[
+      { type:"ok", text:"Corte Comedor confirmado. Tolerancia 10 min. Permanencia maxima 2 horas." },
+      { type:"warn", text:"Argentina debuta en el Mundial el 16 Jun a las 22:00 hs hora Argentina. Si van a un bar deportivo, llegar 1-2 horas antes - los buenos se llenan muy rapido." },
+      { type:"tip", text:"MALBA cierra los martes - ya lo visitaron el jueves 11." }
+    ]
+  },
+  { date:"17 Jun", dow:"Mie", dest:"Buenos Aires", dc:"#faece7", dt:"#712b13", dd:"#993c1d",
+    title:"Ultima manana - Regreso a Mexico",
+    wx:{ icon:"✈️", temp:"8-15C", cond:"Nublado - fresco", tip:"Salir hacia EZE a las 18:30, son ~45 min en Cabify" },
+    acts:[
+      { time:"Manana", name:"Ultimo desayuno porteno", desc:"Medialunas y cafe en Recoleta", tag:"food", map:"Recoleta Buenos Aires Argentina", go:"En Recoleta", walk:true },
+      { time:"Tarde", name:"Ultima vuelta por Recoleta y empacar", desc:"", tag:"walk", map:"Recoleta Buenos Aires Argentina" },
+      { time:"22:05", name:"DM 6201 - EZE a PUJ", desc:"Buenos Aires Ezeiza a Punta Cana - 8h10min - escala 1h", ok:true, tag:"flight", map:"Aeropuerto Internacional Ezeiza Buenos Aires", go:"45 min en Cabify a EZE", walk:false },
+      { time:"06:17", name:"DM 7104 - PUJ a NLU", desc:"Punta Cana a Felipe Angeles CDMX - llegada 09:06 - 18 Jun", ok:true, tag:"flight" }
+    ],
+    tips:[{ type:"tip", text:"Salir hacia EZE a las 18:30 para estar en el aeropuerto a las 19:30." }]
+  }
+];
+
+var TAGS = { flight:"Vuelo", food:"Comida", show:"Show", excur:"Excursion", walk:"Sightseeing", ferry:"Ferry", hotel:"Hotel" };
+
+function gmap(q){ return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q); }
+
+function render(){
+  var pic = document.getElementById("picker");
+  var ctn = document.getElementById("days");
+  DAYS.forEach(function(d, i){
+    var btn = document.createElement("button");
+    btn.className = "dbtn";
+    btn.id = "b"+i;
+    btn.setAttribute("onclick","sel("+i+")");
+    var dot = document.createElement("div");
+    dot.className = "dot";
+    dot.style.background = d.dd;
+    btn.innerHTML = '<span class="dn">'+d.dow+'</span><span class="dd">'+d.date.split(" ")[0]+'</span>';
+    btn.appendChild(dot);
+    pic.appendChild(btn);
+
+    var div = document.createElement("div");
+    div.className = "dcont";
+    div.id = "d"+i;
+
+    var html = '<div class="dhdr"><span class="badge" style="background:'+d.dc+';color:'+d.dt+'">'+d.dest+'</span><span class="dtitle">'+d.title+'</span></div>';
+    html += '<div class="wx"><span class="wx-icon">'+d.wx.icon+'</span><div class="wx-info"><div class="wx-temp">'+d.wx.temp+'</div><div class="wx-cond">'+d.wx.cond+'</div>'+(d.wx.tip?'<div class="wx-tip">'+d.wx.tip+'</div>':'')+'</div></div>';
+
+    d.acts.forEach(function(a){
+      var tap = a.map ? " tap" : "";
+      var conf = a.ok ? " ok" : "";
+      var onclick = a.map ? ' onclick="openMap(\''+a.map.replace(/'/g,"\\'")+'\')"' : "";
+      var arrow = a.map ? '<span class="arr">›</span>' : "";
+      var tagHtml = TAGS[a.tag] ? '<span class="tag tag-'+a.tag+'">'+TAGS[a.tag]+'</span>' : "";
+      var goHtml = "";
+      if(a.go){
+        if(a.walk){ goHtml = '<span class="chip-walk">🚶 '+a.go+'</span>'; }
+        else { goHtml = '<span class="chip-go">🚗 '+a.go+'</span>'; }
+      }
+      html += '<div class="act'+tap+conf+'"'+onclick+'>';
+      html += '<span class="atime">'+a.time+'</span>';
+      html += '<div class="abody"><div class="aname">'+a.name+'</div>';
+      if(a.desc) html += '<div class="adesc">'+a.desc+'</div>';
+      if(tagHtml||goHtml) html += '<div class="achips">'+tagHtml+goHtml+'</div>';
+      html += '</div>'+arrow+'</div>';
+    });
+
+    (d.tips||[]).forEach(function(t){
+      var cls = t.type==="warn"?"warn":t.type==="ok"?"ok":"";
+      var ico = t.type==="warn"?"⚠️":t.type==="ok"?"✅":"ℹ️";
+      html += '<div class="tip '+cls+'">'+ico+' '+t.text+'</div>';
+    });
+
+    div.innerHTML = html;
+    ctn.appendChild(div);
+  });
+  sel(0);
+}
+
+function sel(i){
+  document.querySelectorAll(".dbtn").forEach(function(b,j){ b.classList.toggle("active",j===i); });
+  document.querySelectorAll(".dcont").forEach(function(c,j){ c.classList.toggle("active",j===i); });
+  var btn = document.getElementById("b"+i);
+  if(btn) btn.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+}
+
+function openMap(q){ window.open(gmap(q),"_blank"); }
+
+function tab(t){
+  document.getElementById("tab-itin").style.display = t==="itin"?"block":"none";
+  document.getElementById("tab-res").classList.toggle("active", t==="res");
+  document.getElementById("tab-tips").classList.toggle("active", t==="tips");
+  document.getElementById("tab-bucket").classList.toggle("active", t==="bucket");
+  document.querySelector(".picker-wrap").style.display = t==="itin"?"block":"none";
+  document.querySelectorAll(".nbtn").forEach(function(b){ b.classList.remove("active"); });
+  document.getElementById("n-"+t).classList.add("active");
+}
+
+// ── Bucket list ───────────────────────────────────────────────────────────────
+var BUCKET = {
+  comida: [
+    { id:"c1",  name:"Tira de Asado",         desc:"Short ribs a la parrilla - el corte mas clasico de Argentina" },
+    { id:"c2",  name:"Entraña",                 desc:"Skirt steak - suave y jugosa, la favorita de los portenos" },
+    { id:"c3",  name:"Ojo de Bife",            desc:"Ribeye argentino - marmoleado y lleno de sabor" },
+    { id:"c4",  name:"Provoleta",              desc:"Queso provolone a la parrilla - pedirla en toda parrilla" },
+    { id:"c5",  name:"Molleja",                desc:"Sweetbread - no preguntes, solo prueba" },
+    { id:"c6",  name:"Morcilla",               desc:"Blood sausage argentina - no preguntes, solo prueba" },
+    { id:"c7",  name:"Milanesa",               desc:"Carne empanizada estilo schnitzel - pedir en Mengano" },
+    { id:"c8",  name:"Empanadas",              desc:"De carne cortada a cuchillo - en Romario o Costumbres Criollas" },
+    { id:"c9",  name:"Medialunas",             desc:"Croissant dulce de manteca - desayuno porteno esencial" },
+    { id:"c10", name:"Gelato de Dulce de Leche", desc:"El sabor mas argentino que existe - en Finde o Cadore" },
+    { id:"c11", name:"Pizza fugazzeta rellena",  desc:"Pizza argentina de cebolla con mozzarella adentro - Guerrin" },
+    { id:"c12", name:"Cordero patagónico al asador", desc:"La Tablita, El Calafate - el plato de la Patagonia" },
+    { id:"c13", name:"Trucha patagónica",        desc:"Especialidad de los lagos - en Bariloche" },
+    { id:"c14", name:"Chivito",                desc:"El sandwich nacional de Uruguay - en El Porton, Colonia" }
+  ],
+  bebida: [
+    { id:"b1", name:"Malbec argentino",        desc:"El vino bandera de Argentina - pedir una botella en cualquier parrilla" },
+    { id:"b2", name:"Fernet con Coca",          desc:"El trago nacional - si no lo tomaste, no fuiste a Argentina" },
+    { id:"b3", name:"Mate",                    desc:"La bebida cultural por excelencia - si alguien te ofrece, acepta" },
+    { id:"b4", name:"Submarino",               desc:"Leche caliente con una barra de chocolate adentro - en cualquier cafe" },
+    { id:"b5", name:"Cerveza artesanal",        desc:"De Bariloche - las mejores del pais, con el paisaje de fondo" },
+    { id:"b6", name:"Torrontés",                 desc:"Vino blanco aromatico tipico del norte argentino - fresco y floral" },
+    { id:"b7", name:"Coctel de autor",          desc:"En Floreria Atlantico - uno de los mejores bares de Sudamerica" },
+    { id:"b8", name:"Medialuna con cafe",       desc:"El desayuno porteno canonico - en Atelier Fuerza o Boulan" }
+  ],
+  souvenirs: [
+    { id:"s1",  name:"Matera y bombilla",          desc:"Argentina - El souvenir mas iconico. En Feria de Recoleta o San Telmo. Elegir una de calabaza con bombilla de plata." },
+    { id:"s2",  name:"Chocolates de Bariloche",     desc:"Argentina - De Rapa Nui o Abuela Goye en Calle Mitre. El souvenir por excelencia de Bariloche. Caben en el carry-on." },
+    { id:"s3",  name:"Alfajores Havanna",           desc:"Argentina - Los mas famosos del pais, rellenos de dulce de leche. En cualquier tienda Havanna o supermercado." },
+    { id:"s4",  name:"Dulce de Leche",              desc:"Argentina - Unos 2-3 frascos para llevar. Marca La Serenisima o Vacalin. En cualquier supermercado de Buenos Aires." },
+    { id:"s5",  name:"Cuero argentino",             desc:"Argentina - Billetera, cinturon o cartera pequeña. En Distrito Arcos (a 7 min caminando del Airbnb) o Calle Murillo." },
+    { id:"s6",  name:"Vino Malbec",                 desc:"Argentina - Una o dos botellas de una bodega de Mendoza. En cualquier vinoteca de Palermo. El emblema del vino argentino." },
+    { id:"s7",  name:"Yerba mate",                  desc:"Argentina - Un paquete de buena yerba para preparar mate en casa. Marca Amanda o Taragui. En cualquier supermercado." },
+    { id:"s8",  name:"Tejidos de lana uruguaya",    desc:"Uruguay - Bufanda, sueter o manta. En las tiendas de Colonia del Sacramento. Lana merino de calidad superior." },
+    { id:"s9",  name:"Vino Tannat uruguayo",        desc:"Uruguay - La uva insignia de Uruguay, muy diferente al Malbec. Casi imposible de conseguir en Mexico. Comprar en Colonia o en el duty free del ferry." },
+    { id:"s10", name:"Artesanias de Colonia",       desc:"Uruguay - Ceramicas, tejidos y objetos de madera del casco historico. Los artesanos locales venden en la calle principal." },
+    { id:"s11", name:"Cerveza artesanal de Bariloche", desc:"Argentina - Una o dos botellas de alguna cerveceria local de Bariloche. Recuerda que viajas en cabina - verifica restricciones de liquidos." },
+    { id:"s12", name:"Rapa Nui chocolate box",      desc:"Argentina (Bariloche) - La caja regalo de Rapa Nui es el souvenir mas fotografiado de Bariloche. Perfecta para regalar." }
+  ],
+  lugares: [
+    { id:"l1",  name:"El Ateneo Grand Splendid",   desc:"La libreria mas bella del mundo - a pasos del Airbnb en Recoleta" },
+    { id:"l2",  name:"Cementerio de Recoleta",     desc:"Tour guiado obligatorio - historia y arquitectura fascinantes" },
+    { id:"l3",  name:"Caminito - La Boca",         desc:"El barrio mas colorido de Buenos Aires - en Cabify directo" },
+    { id:"l4",  name:"Feria San Pedro Telmo",      desc:"La feria dominical mas famosa de Buenos Aires - musica y antiguedades" },
+    { id:"l5",  name:"Teatro Colon",               desc:"Uno de los mejores teatros de opera del mundo - tour obligatorio" },
+    { id:"l6",  name:"Puerto Madero",              desc:"Puente de la Mujer y costanera - moderno y fotogenico" },
+    { id:"l7",  name:"Feria artesanos Recoleta",   desc:"Sabados y domingos en Plaza Francia - a 6 min caminando del Airbnb" },
+    { id:"l8",  name:"Palermo Soho",               desc:"Barrio de tiendas, galerias y los mejores cafes de BsAs" },
+    { id:"l9",  name:"Circuito Chico - Bariloche", desc:"La ruta escenica mas bella de la Patagonia - Cerro Campanario y Llao Llao" },
+    { id:"l10", name:"Cerro Otto - Bariloche",     desc:"Teleferico con vistas 360 grados a los Andes nevados" },
+    { id:"l11", name:"Glaciar Perito Moreno",      desc:"Una de las maravillas naturales del mundo - ya reservado" },
+    { id:"l12", name:"Laguna Nimez - El Calafate", desc:"Reserva de flamencos a pasos del hotel" },
+    { id:"l13", name:"Barrio Historico de Colonia",desc:"Patrimonio UNESCO en Uruguay - calles empedradas y faro colonial" },
+    { id:"l14", name:"Lago Nahuel Huapi",          desc:"El lago patagonico mas impresionante - a pasos del hotel en Bariloche" }
+  ]
+};
+
+function getChecked(){ try { return JSON.parse(localStorage.getItem("arg26")||"{}"); } catch(e){ return {}; } }
+function saveChecked(obj){ try { localStorage.setItem("arg26", JSON.stringify(obj)); } catch(e){} }
+
+function updateProgress(){
+  var checked = getChecked();
+  var cats = ["comida","bebida","lugares","souvenirs"];
+  var total = 0, done = 0;
+  cats.forEach(function(cat){ total += BUCKET[cat].length; });
+  cats.forEach(function(cat){
+    var catDone = 0;
+    BUCKET[cat].forEach(function(it){ if(checked[it.id]) { done++; catDone++; } });
+    var cnt = document.getElementById("cnt-"+cat);
+    if(cnt) cnt.textContent = catDone + " / " + BUCKET[cat].length;
+  });
+  var fill = document.getElementById("prog-fill");
+  if(fill) fill.style.width = (total > 0 ? Math.round(done/total*100) : 0) + "%";
+}
+
+function toggleItem(id){
+  var checked = getChecked();
+  checked[id] = !checked[id];
+  if(!checked[id]) delete checked[id];
+  saveChecked(checked);
+  var el = document.getElementById("bitem-"+id);
+  if(el) el.classList.toggle("done", !!getChecked()[id]);
+  updateProgress();
+}
+
+function buildBucket(){
+  var checked = getChecked();
+  ["comida","bebida","lugares","souvenirs"].forEach(function(cat){
+    var sec = document.getElementById("sec-"+cat);
+    BUCKET[cat].forEach(function(it){
+      var div = document.createElement("div");
+      div.className = "bitem" + (checked[it.id] ? " done" : "");
+      div.id = "bitem-"+it.id;
+      div.setAttribute("onclick","toggleItem('"+it.id+"')");
+      div.innerHTML =
+        '<div class="bcheck"><span class="bcheck-icon">✓</span></div>' +
+        '<div><div class="bname">'+it.name+'</div><div class="bdesc">'+it.desc+'</div></div>';
+      sec.appendChild(div);
+    });
+  });
+  updateProgress();
+}
+
+render();
+buildBucket();
+</script>
+</body>
+</html>
