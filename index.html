@@ -127,6 +127,41 @@ body{
 .pv{font-size:14px;color:var(--text);line-height:1.45}
 .code{font-family:'SF Mono',Menlo,monospace;font-size:15px;font-weight:700;background:var(--tip-bg);padding:3px 9px;border-radius:7px;letter-spacing:1px}
 
+/* Today pill on day picker */
+.dbtn.today { box-shadow: 0 0 0 2px var(--gold); }
+.dbtn.today .dd { color: var(--gold); }
+
+/* Checklist section (pre-trip) */
+.cl-hdr { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--sub); margin: 0 0 10px 4px; }
+.cl-prog { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cl-bar { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.cl-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .3s; }
+.cl-label { font-size: 12px; font-weight: 600; color: var(--sub); white-space: nowrap; }
+.cl-group { margin-bottom: 14px; }
+.cl-group-title { font-size: 12px; font-weight: 700; color: var(--sub); padding: 6px 14px; background: var(--tip-bg); border-radius: 8px; margin-bottom: 7px; }
+.cl-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 13px; margin-bottom: 7px;
+  cursor: pointer; transition: opacity .15s, background .15s;
+  -webkit-user-select: none; user-select: none;
+}
+.cl-item:active { opacity: .75; }
+.cl-item.done { background: #f0faf5; border-color: #c0e8d4; }
+.cl-box {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s; margin-top: 1px;
+}
+.cl-item.done .cl-box { background: var(--accent); border-color: var(--accent); }
+.cl-tick { font-size: 12px; color: white; display: none; }
+.cl-item.done .cl-tick { display: block; }
+.cl-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.cl-item.done .cl-name { color: var(--sub); text-decoration: line-through; }
+.cl-note { font-size: 12px; color: var(--sub); margin-top: 2px; line-height: 1.4; }
+.cl-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
 /* Bucket list */
 .bsec { margin-bottom: 22px; }
 .bsec-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -320,6 +355,19 @@ body{
 </div>
 
 <div id="tab-bucket" class="panel">
+
+  <!-- ── Checklist pre-viaje ── -->
+  <div id="sec-checklist">
+    <p class="cl-hdr">🧳 Antes de salir</p>
+    <div class="cl-prog">
+      <div class="cl-bar"><div class="cl-fill" id="cl-fill" style="width:0%"></div></div>
+      <span class="cl-label" id="cl-label">0 / 0</span>
+    </div>
+    <div id="cl-groups"></div>
+  </div>
+
+  <div class="cl-divider"></div>
+
   <div id="progress-bar-wrap" class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
 
   <div class="bsec" id="sec-comida">
@@ -619,11 +667,31 @@ function render(){
     div.innerHTML = html;
     ctn.appendChild(div);
   });
-  sel(0);
+  // Auto-select today's day
+  sel(todayIndex());
+}
+
+function todayIndex(){
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  // Trip is June 2026 (month index 5)
+  if(y < 2026 || (y===2026 && m < 5)) return 0;           // before trip
+  if(y > 2026 || (y===2026 && m > 5)) return DAYS.length-1; // after trip
+  // During trip — find matching day
+  for(var i=0; i<DAYS.length; i++){
+    var dayNum = parseInt(DAYS[i].date.split(" ")[0], 10);
+    if(d === dayNum) return i;
+  }
+  if(d < parseInt(DAYS[0].date.split(" ")[0],10)) return 0;
+  return DAYS.length-1;
 }
 
 function sel(i){
-  document.querySelectorAll(".dbtn").forEach(function(b,j){ b.classList.toggle("active",j===i); });
+  var today = todayIndex();
+  document.querySelectorAll(".dbtn").forEach(function(b,j){
+    b.classList.toggle("active", j===i);
+    b.classList.toggle("today",  j===today);
+  });
   document.querySelectorAll(".dcont").forEach(function(c,j){ c.classList.toggle("active",j===i); });
   var btn = document.getElementById("b"+i);
   if(btn) btn.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
@@ -747,8 +815,89 @@ function buildBucket(){
   updateProgress();
 }
 
+// ── Checklist pre-viaje ──────────────────────────────────────────────────────
+var CHECKLIST = [
+  { group:"📄 Documentos", items:[
+    { id:"p1",  name:"Pasaportes vigentes",          note:"Verificar que no venzan en los proximos 6 meses desde jun 2026" },
+    { id:"p2",  name:"Boletos descargados offline",  note:"Arajet (DM 7165, DM 6200, DM 6201, DM 7104) y Aerolineas (AR 1674, AR 1669, AR 1838, AR 1849)" },
+    { id:"p3",  name:"Confirmaciones de hotel",      note:"Gran Hotel Panamericano (Bariloche) y Mirador del Lago (El Calafate) guardadas offline" },
+    { id:"p4",  name:"Seguro de viaje activo",       note:"Verificar cobertura medica y de cancelacion" }
+  ]},
+  { group:"💵 Dinero", items:[
+    { id:"p5",  name:"USD en efectivo",              note:"Minimo $200-300 USD para cambiar en Western Union en Buenos Aires (tasa blue)" },
+    { id:"p6",  name:"Avisar al banco del viaje",    note:"Notificar que usaran Visa/Mastercard en Argentina y Uruguay" },
+    { id:"p7",  name:"Verificar tarjetas",           note:"Confirmar que Visa o Mastercard esten habilitadas para uso internacional" }
+  ]},
+  { group:"⚡ Tecnologia", items:[
+    { id:"p8",  name:"Adaptador de corriente Tipo I",note:"URGENTE - Argentina usa 3 patas en triangulo, diferente al enchufe mexicano. Comprar si no tienen." },
+    { id:"p9",  name:"Power bank cargado",            note:"Llevarlo en equipaje de mano, no en maleta documentada" },
+    { id:"p10", name:"App Cabify instalada",          note:"Con metodo de pago configurado — es el transporte principal en Buenos Aires" },
+    { id:"p11", name:"Google Maps offline",           note:"Descargar mapas sin internet de: Buenos Aires, Bariloche y El Calafate" },
+    { id:"p12", name:"Itinerario en el iPhone",      note:"Ya esta en GitHub Pages. Subir version actualizada si se hicieron cambios." }
+  ]},
+  { group:"🧥 Ropa de invierno", items:[
+    { id:"p13", name:"Chamarra o abrigo de invierno",note:"Buenos Aires 8-15C, Bariloche hasta -1C, El Calafate hasta -2C" },
+    { id:"p14", name:"Ropa termica base",             note:"Camisetas y pants termicos — imprescindibles para Bariloche y El Calafate" },
+    { id:"p15", name:"Guantes y gorro",               note:"Obligatorio para El Calafate. En Bariloche tambien hace falta." },
+    { id:"p16", name:"Botas impermeables",            note:"Con agarre para nieve — puede haber nieve en El Calafate en junio" },
+    { id:"p17", name:"Bufanda",                       note:"Para el viento patagonico — especialmente en el Glaciar Perito Moreno" }
+  ]},
+  { group:"✅ Pendientes de compra o gestion", items:[
+    { id:"p19", name:"Comprar adaptador Tipo I",      note:"Se consigue en tiendas de electronica. Buscar 'adaptador tipo I Argentina'." },
+    { id:"p20", name:"Comprar USD en efectivo",       note:"En casas de cambio o bancos en Mexico antes de salir — mas facil que conseguirlos en el aeropuerto" },
+    { id:"p21", name:"Descargar PDF del itinerario",  note:"Guardarlo offline en el iPhone por si no hay internet" },
+    { id:"p22", name:"Pedir La Tablita en El Calafate", note:"Pedirle al Mirador del Lago que reserven La Tablita cuando lleguen el 8 de junio" }
+  ]}
+];
+
+function getChecklist(){ try{ return JSON.parse(localStorage.getItem("arg26cl")||"{}"); } catch(e){ return {}; } }
+function saveChecklist(obj){ try{ localStorage.setItem("arg26cl", JSON.stringify(obj)); } catch(e){} }
+
+function updateChecklistProgress(){
+  var checked = getChecklist();
+  var total = 0, done = 0;
+  CHECKLIST.forEach(function(g){ g.items.forEach(function(it){ total++; if(checked[it.id]) done++; }); });
+  var fill = document.getElementById("cl-fill");
+  var label = document.getElementById("cl-label");
+  if(fill) fill.style.width = (total>0 ? Math.round(done/total*100) : 0)+"%";
+  if(label) label.textContent = done+" / "+total;
+}
+
+function toggleCl(id){
+  var checked = getChecklist();
+  checked[id] = !checked[id];
+  if(!checked[id]) delete checked[id];
+  saveChecklist(checked);
+  var el = document.getElementById("clitem-"+id);
+  if(el) el.classList.toggle("done", !!getChecklist()[id]);
+  updateChecklistProgress();
+}
+
+function buildChecklist(){
+  var checked = getChecklist();
+  var wrap = document.getElementById("cl-groups");
+  CHECKLIST.forEach(function(g){
+    var gtitle = document.createElement("p");
+    gtitle.className = "cl-group-title";
+    gtitle.textContent = g.group;
+    wrap.appendChild(gtitle);
+    g.items.forEach(function(it){
+      var div = document.createElement("div");
+      div.className = "cl-item"+(checked[it.id]?" done":"");
+      div.id = "clitem-"+it.id;
+      div.setAttribute("onclick","toggleCl('"+it.id+"')");
+      div.innerHTML =
+        '<div class="cl-box"><span class="cl-tick">✓</span></div>'+
+        '<div><div class="cl-name">'+it.name+'</div><div class="cl-note">'+it.note+'</div></div>';
+      wrap.appendChild(div);
+    });
+  });
+  updateChecklistProgress();
+}
+
 render();
 buildBucket();
+buildChecklist();
 </script>
 </body>
 </html>
